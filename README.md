@@ -5,3 +5,7 @@ Distributed as "Keytar Rokker Lite" source code because all encryption/decryptio
 I can't and will not provide any support. But I'm sure there are talented people out there who can make good use of this.
 
 - TrojanNemo
+
+sdasda7777, Ma 2018:
+- Added MIDI output support
+- Planned revision of GUI
