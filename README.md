@@ -6,6 +6,7 @@ I can't and will not provide any support. But I'm sure there are talented people
 
 - TrojanNemo
 
+
 sdasda7777, Ma 2018:
 - Added MIDI output support
 - Planned revision of GUI
