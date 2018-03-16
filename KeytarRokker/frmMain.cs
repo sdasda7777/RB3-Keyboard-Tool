@@ -18,6 +18,8 @@ using Un4seen.Bass.AddOn.Mix;
 using Controller = SlimDX.XInput.Controller;
 using Font = System.Drawing.Font;
 using FontStyle = System.Drawing.FontStyle;
+using Midi;
+using System.Threading;
 
 namespace KeytarRokker
 {
@@ -201,8 +203,57 @@ namespace KeytarRokker
             CheckLCDFontIsAvailable();
             SelectController(UserIndex.One);
             MouseWheel += frmMain_MouseWheel;
+            muteProgramWhileTransmittingToolStripMenuItem.Checked=true;
+            
+            foreach (OutputDevice device in OutputDevice.InstalledDevices)
+            {
+            	ToolStripItem item = outputDeviceToolStripMenuItem.DropDownItems.Add(device.Name);
+            	item.ForeColor=Color.White;
+            	item.Click += new EventHandler(OutputDeviceClicked);
+            }
         }
 
+        private void OutputDeviceClicked(object sender, EventArgs e){
+        	ToolStripMenuItem clickedItem = (ToolStripMenuItem)sender;
+        	if(clickedItem.Checked==true){
+        		clickedItem.Checked=false;
+        	}else if(clickedItem.Checked==false){
+        		clickedItem.Checked=true;
+        	}
+        }
+        
+        private Pitch GetPitchFromKey(int i){
+        	switch(i){
+    			case 0 : return Pitch.C3;
+    			case 1 : return Pitch.CSharp3;
+    			case 2 : return Pitch.D3;
+    			case 3 : return Pitch.DSharp3;
+    			case 4 : return Pitch.E3;
+    			case 5 : return Pitch.F3;
+    			case 6 : return Pitch.FSharp3;
+    			case 7 : return Pitch.G3;
+    			case 8 : return Pitch.GSharp3;
+    			case 9 : return Pitch.A3;
+    			case 10: return Pitch.ASharp3;
+    			case 11: return Pitch.B3;
+    			case 12: return Pitch.C4;
+    			case 13: return Pitch.CSharp4;
+    			case 14: return Pitch.D4;
+    			case 15: return Pitch.DSharp4;
+    			case 16: return Pitch.E4;
+    			case 17: return Pitch.F4;
+    			case 18: return Pitch.FSharp4;
+    			case 19: return Pitch.G4;
+    			case 20: return Pitch.GSharp4;
+    			case 21: return Pitch.A4;
+    			case 22: return Pitch.ASharp4;
+    			case 23: return Pitch.B4;
+    			case 24: return Pitch.C5;
+    			
+    			default: return Pitch.C0;
+        	}
+        }
+        
         private void frmMain_MouseWheel(object sender, MouseEventArgs e)
         {
             if (e.Delta < 0 && PlaybackSeconds > 1.0)
@@ -830,6 +881,14 @@ namespace KeytarRokker
         private void PressKey(int key)
         {
             PlaySample(key, 50);
+            
+  			foreach (ToolStripMenuItem item in outputDeviceToolStripMenuItem.DropDownItems)
+        	{	
+            	if(item.Checked == true){
+  					Debug.WriteLine("KeyCode: "+ key.ToString());
+            	}
+        	}
+        	
         }
 
         private void ReleaseKey(int key)
@@ -856,6 +915,26 @@ namespace KeytarRokker
             STATE_INPUT[key] = true;
             UpdatePressedKeys(key);
         }
+        
+        private void PlaySample(int key, int velocity, int size)
+        {
+            const int PADDING = 12; //seems this player is an octave lower than our piano samples, let's compensate
+            var MIDI_NOTE = PADDING + key + (BaseOctave*12);
+            if (CurrentAudioType > 0)
+            {	
+            	if(muteProgramWhileTransmittingToolStripMenuItem.Checked==false || size==0){
+            		MidiPlayer.Play(new NoteOn(0, 1, (byte)MIDI_NOTE, 127));	
+            	}
+                
+            }
+            else
+            {
+                Bass.BASS_ChannelSetAttribute(STREAMS[key], BASSAttribute.BASS_ATTRIB_VOL, (float)(velocity / 127.0));
+                Bass.BASS_ChannelPlay(STREAMS[key], true);
+            }
+            STATE_INPUT[key] = true;
+            UpdatePressedKeys(key);
+        }
 
         private void StopSample(int key)
         {
@@ -864,6 +943,25 @@ namespace KeytarRokker
             if (CurrentAudioType > 0)
             {
                 MidiPlayer.Play(new NoteOff(0, 1, (byte)MIDI_NOTE, 127));
+            }
+            else
+            {
+                Bass.BASS_ChannelStop(STREAMS[key]);
+            }
+            if (key > STATE_INPUT.Count - 1) return;
+            STATE_INPUT[key] = false;
+            UpdatePressedKeys(key);
+        }
+        
+        private void StopSample(int key, int size)
+        {
+            const int PADDING = 12; //seems this player is an octave lower than our piano samples, let's compensate
+            var MIDI_NOTE = PADDING + key + (BaseOctave * 12);
+            if (CurrentAudioType > 0)
+            {
+            	if(muteProgramWhileTransmittingToolStripMenuItem.Checked==false || size==0){
+            		MidiPlayer.Play(new NoteOff(0, 1, (byte)MIDI_NOTE, 127));	
+            	}
             }
             else
             {
@@ -1110,20 +1208,56 @@ namespace KeytarRokker
                 //25
                 CurrentKeysState[24] = (byte)(HiByte(gamepad.LeftThumbX) & 128);
 
+                //Create list of MIDI outputs for use
+                List<OutputDevice> tempOutput = new List<OutputDevice>();
+                foreach (OutputDevice device in OutputDevice.InstalledDevices)
+	            {
+                	foreach (ToolStripMenuItem item in outputDeviceToolStripMenuItem.DropDownItems)
+		        	{	
+		            	if(device.Name==item.Text && item.Checked == true){
+                			tempOutput.Add(device);
+		            	}
+		        	}
+	            }
+                
+                
+                
                 //Compare The Current States To Last States To Generate Change Events
+                //This part is most interesting
                 for (var i = 0; i < 25; i++)
                 {
                     if (CurrentKeysState[i] != LastKeysState[i])
                     {
                         if (!STATE_INPUT[i])
-                        {
-                            PlaySample(i, Velocity);
+                        {	
+                        	PlaySample(i, Velocity, tempOutput.Count);
+                            
+                            //Debug.WriteLine("Cause: "+i);
+                            
+                            foreach (OutputDevice device in tempOutput)
+				            {
+                            	device.Open();
+                            	//Debug.WriteLine("On: "+GetPitchFromKey(i));
+                    			//Debug.WriteLine(GetPitchFromKey(i).ToString());
+		  					 	device.SendNoteOn(Channel.Channel1, GetPitchFromKey(i), 80);
+		  					 	device.Close();
+				            }
+				            
                         }
                         else
                         {
                             if (!STATE_PEDAL && !forcePedal)
                             {
-                                StopSample(i);
+                        		StopSample(i, tempOutput.Count);
+                                
+                                foreach (OutputDevice device in tempOutput)
+					            {
+                                	device.Open();
+                                	//Debug.WriteLine("Off: "+GetPitchFromKey(i));
+		                			//Debug.WriteLine(GetPitchFromKey(i).ToString());
+			  					 	device.SendNoteOff(Channel.Channel1, GetPitchFromKey(i), 80);
+					            	device.Close();
+                                }
                             }
                             else
                             {
@@ -1633,9 +1767,9 @@ namespace KeytarRokker
 
         private void frmMain_Resize(object sender, EventArgs e)
         {
-            if (WindowState != FormWindowState.Minimized) return;
-            NotifyTray.ShowBalloonTip(250);
-            Hide();
+            //if (WindowState != FormWindowState.Minimized) return;
+            //NotifyTray.ShowBalloonTip(250);
+            //Hide();
         }
 
         private void frmMain_KeyDown(object sender, KeyEventArgs e)
@@ -2383,6 +2517,14 @@ namespace KeytarRokker
             Clipboard.SetText(lblDebug.Text);
             MessageBox.Show("Debugging info copied to clipboard", AppName, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+		void MuteProgramWhileTransmittingToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			if(muteProgramWhileTransmittingToolStripMenuItem.Checked==true){
+				muteProgramWhileTransmittingToolStripMenuItem.Checked=false;
+			}else if(muteProgramWhileTransmittingToolStripMenuItem.Checked==false){
+				muteProgramWhileTransmittingToolStripMenuItem.Checked=true;
+			}
+		}
     }
 
     public class QuickAccessButton

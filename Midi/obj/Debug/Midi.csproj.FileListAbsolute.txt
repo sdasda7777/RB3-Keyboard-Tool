@@ -1,0 +1,11 @@
+C:\Users\sdasda7777\Downloads\midi-dot-net-master\Midi\bin\Debug\Midi.XML
+C:\Users\sdasda7777\Downloads\midi-dot-net-master\Midi\bin\Debug\Midi.dll
+C:\Users\sdasda7777\Downloads\midi-dot-net-master\Midi\bin\Debug\Midi.pdb
+C:\Users\sdasda7777\Downloads\midi-dot-net-master\Midi\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\sdasda7777\Downloads\midi-dot-net-master\Midi\obj\Debug\Midi.dll
+C:\Users\sdasda7777\Downloads\midi-dot-net-master\Midi\obj\Debug\Midi.pdb
+C:\Users\sdasda7777\Downloads\Keytar-Rokker-master\Midi\bin\Midi.dll
+C:\Users\sdasda7777\Downloads\Keytar-Rokker-master\Midi\bin\Midi.pdb
+C:\Users\sdasda7777\Downloads\Keytar-Rokker-master\Midi\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\sdasda7777\Downloads\Keytar-Rokker-master\Midi\obj\Debug\Midi.dll
+C:\Users\sdasda7777\Downloads\Keytar-Rokker-master\Midi\obj\Debug\Midi.pdb
