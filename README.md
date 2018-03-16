@@ -8,5 +8,5 @@ I can't and will not provide any support. But I'm sure there are talented people
 
 
 sdasda7777, Ma 2018: 
--added MIDI output support for those which MIDI doesnt seem to work (You can turn MIDI output into MIDI input using one of    those virtual cable programs)
--PLANNED: revision of GUI, simpler and programmable buttons
+- added MIDI output support for those which MIDI doesnt seem to work (You can turn MIDI output into MIDI input using one of    those virtual cable programs)
+- PLANNED: revision of GUI, simpler and programmable buttons
