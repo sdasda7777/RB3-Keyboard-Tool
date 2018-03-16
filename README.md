@@ -5,3 +5,6 @@ Distributed as "Keytar Rokker Lite" source code because all encryption/decryptio
 I can't and will not provide any support. But I'm sure there are talented people out there who can make good use of this.
 
 - TrojanNemo
+
+
+sdasda7777: added MIDI output support for those which MIDI doesnt seem to work (You can turn MIDI output into MIDI input using one of    those virtual cable programs)
