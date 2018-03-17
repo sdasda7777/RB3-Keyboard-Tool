@@ -8,5 +8,6 @@ I can't and will not provide any support. But I'm sure there are talented people
 
 
 sdasda7777, Ma 2018:
+- Not really sure if just Xbox 360 supported, guessing Wii and PS3 would work with some controller emulation (X360ce)
 - Added MIDI output support
 - Planned revision of GUI
